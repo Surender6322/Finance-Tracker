@@ -31,15 +31,15 @@ db.transactions = require('../models/transaction.js')(sequelize, DataTypes);
 db.budgets = require('../models/budget.js')(sequelize, DataTypes);
 
 //one to many b/w user and superuser
-db.superusers.hasMany(db.users, {foreignKey: 'bossId' });
+db.superusers.hasMany(db.users, {foreignKey: 'bossId' ,onDelete:'CASCADE'});
 db.users.belongsTo(db.superusers,{foreignKey:'bossId'})
 
 // one to many b/w users and budget
-db.users.hasMany(db.budgets, {foreignKey: 'userId'})
+db.users.hasMany(db.budgets, {foreignKey: 'userId',onDelete:'CASCADE'})
 db.budgets.belongsTo(db.users, {foreignKey: 'userId'})
 
  // one to many b/w users and transactions
- db.users.hasMany(db.transactions, {foreignKey: 'userId'})
+ db.users.hasMany(db.transactions, {foreignKey: 'userId',onDelete:'CASCADE'})
  db.transactions.belongsTo(db.users, {foreignKey: 'userId'})
 
 // Synchronize the models with the database, creating tables if not exist (force: false)

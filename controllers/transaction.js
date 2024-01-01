@@ -49,10 +49,14 @@ router.get('/transactions/list', auth, async (req, res) => {
     try {
         // Extract user ID from the authenticated request
         const userId = req.user.id;
+        const page = req.query.page || 1;
+        const pageSize = req.query.pageSize || 10
 
         // Retrieve transactions using Sequelize
         const transactions = await Transactions.findAll({
             where: { userId },
+            offset: (page-1)*pageSize,
+            limit:pageSize
         });
 
         res.json({ transactions });

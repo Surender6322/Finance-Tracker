@@ -100,5 +100,16 @@ router.get('/superusers/allusers', auth,  async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   });
-
+// Route to delete a superuser and related data
+router.delete('/superusers', auth, async (req, res) => {
+    try{
+        const superuser = req.superuser
+        console.log("---------------------------------------")
+        console.log(superuser)
+        await req.superuser.destroy()
+        res.status(200).send({superuser})
+    }catch(e){
+        res.status(500).send(e)
+    }
+});
 module.exports = router;

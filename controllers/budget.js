@@ -13,17 +13,18 @@ router.post('/budgets', auth, async (req, res) => {
         // Extract data from the request body
         const { amount, currency, month } = req.body;
         const userId = req.user.id;
-        // console.log(userId)
+        console.log(userId)
 
         // Check if a budget for the given month already exists
-        const existedBudget = await Budgets.findOne({ where: { month } });
+        const existedBudget = await Budgets.findOne({ userId,where: { month } });
 
         // Update if exists, otherwise create a new budget
         if (existedBudget) {
-            await Budgets.update({ amount, currency }, { where: { month } });
+            await Budgets.update({ amount, currency }, {userId, where: { month } });
             res.status(200).send({ existedBudget });
         } else {
             const newBudget = await Budgets.create({ amount, month, currency, userId });
+            console.log(newBudget)
             res.status(201).send({ newBudget });
         }
     } catch (error) {
@@ -37,8 +38,9 @@ router.get('/budgets/:month', auth, async (req, res) => {
     try {
         // Extract data from the request parameters
         const { month } = req.params;
+        console.log(month)
         const userId = req.user.id;
-
+        console.log(userId,"-===================-==-=")
         // Validate input
         if (!month) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -48,6 +50,8 @@ router.get('/budgets/:month', auth, async (req, res) => {
         const foundBudget = await Budgets.findOne({
             where: { userId, month: month.toLowerCase() },
         });
+
+        console.log("foundBudget=============",foundBudget)
 
         if (!foundBudget) {
             return res.status(404).json({ error: 'Budget not found for the specified month and year' });

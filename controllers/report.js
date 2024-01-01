@@ -12,14 +12,15 @@ console.log(typeof(Budgets))
 router.get('/report', auth, async (req, res) => {
   try {
     const userId = req.user.id;
-    // console.log(userId)
+    console.log(userId)
 
     // Calculate total income and expenses for the current month
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1; // Months are 0-indexed in JavaScript
+    const monthy = currentDate.getMonth() + 1; // Months are 0-indexed in JavaScript
     // console.log(currentMonth)
     const currentYear = currentDate.getFullYear();
-    // console.log(currentYear)
+    const currentMonth = monthy<10?'0'+monthy:monthy
+    console.log(currentYear)
     
     // Calculate total income for the current month
     const incomeResult = await Transactions.sum('amount', {
@@ -31,14 +32,15 @@ router.get('/report', auth, async (req, res) => {
     const expenseResult = await Transactions.sum('amount', {
       where: { userId, category: 'expense', date: { [Op.substring]: `${currentYear}-${currentMonth}` } },
     });
-    console.log(expenseResult)
+    // console.log(expenseResult)
     
     const totalIncome = incomeResult || 0;
     const totalExpense = expenseResult || 0;
-    console.log("==========================")
+    // console.log("==========================")
     // console.log(Budgets)
     // Find the budget for the current month
     const monthName = convertMonthNumberToName(currentMonth);
+    console.log(monthName)
     const budgetResult = await Budgets.findOne({
       where: { userId, month: monthName },
     });
