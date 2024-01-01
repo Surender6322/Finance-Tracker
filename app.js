@@ -8,9 +8,11 @@ require('./config/db.js');
 const app = express();
 
 // Import the controllers for user, transaction, and budget routes
-const userCtrl = require('./controllers/user.js');
-const transCtrl = require('./controllers/transaction.js');
-const budgetCtrl = require('./controllers/budget.js');
+const superuserController = require('./controllers/superuser.js');
+const userController = require('./controllers/user.js');
+const transController = require('./controllers/transaction.js');
+const budgetController = require('./controllers/budget.js');
+const reportController = require('./controllers/report.js')
 
 // Set the port for the server to listen on
 const port = 3000;
@@ -19,9 +21,11 @@ const port = 3000;
 app.use(express.json());
 
 // Use the controllers for handling routes related to users, transactions, and budgets
-app.use(userCtrl);
-app.use(transCtrl);
-app.use(budgetCtrl);
+app.use(superuserController);
+app.use(userController);
+app.use(transController);
+app.use(budgetController);
+app.use(reportController);
 
 // Define a route for the root URL that sends a simple response
 app.get('', (req, res) => {

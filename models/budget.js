@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         amount: {
             type: DataTypes.DECIMAL(15, 2), // Decimal with 15 digits, 2 decimal places
             allowNull: false, // Not allowed to be null
+            defaultValue:0.00
         },
         // Define the 'month' column with a STRING data type and constraints
         month: {

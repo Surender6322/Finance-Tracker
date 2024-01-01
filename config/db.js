@@ -1,5 +1,5 @@
 // Import Sequelize and its DataTypes module
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes, BelongsTo } = require('sequelize');
 
 // Create a new Sequelize instance with database connection details
 const sequelize = new Sequelize({
@@ -24,9 +24,23 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Import and initialize user, transaction, and budget models
+
+db.superusers = require('../models/superuser.js')(sequelize, DataTypes);
 db.users = require('../models/user.js')(sequelize, DataTypes);
 db.transactions = require('../models/transaction.js')(sequelize, DataTypes);
 db.budgets = require('../models/budget.js')(sequelize, DataTypes);
+
+//one to many b/w user and superuser
+db.superusers.hasMany(db.users, {foreignKey: 'bossId' });
+db.users.belongsTo(db.superusers,{foreignKey:'bossId'})
+
+// one to many b/w users and budget
+db.users.hasMany(db.budgets, {foreignKey: 'userId'})
+db.budgets.belongsTo(db.users, {foreignKey: 'userId'})
+
+ // one to many b/w users and transactions
+ db.users.hasMany(db.transactions, {foreignKey: 'userId'})
+ db.transactions.belongsTo(db.users, {foreignKey: 'userId'})
 
 // Synchronize the models with the database, creating tables if not exist (force: false)
 db.sequelize.sync({ force: false }).then(() => {

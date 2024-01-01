@@ -32,20 +32,48 @@ router.post('/users/register', async (req, res) => {
 });
 
 // Route to log in an existing user
+////////////
+
 router.post('/users/login', async (req, res) => {
     try {
-        // Find a user by their credentials using Sequelize
-        const user = await Users.findByCredentials(req.body.email, req.body.password);
+        // Extract user login credentials from the request body
+        // const { email, password } = req.body;
 
-        // Generate an authentication token for the user
-        const token = await user.generateAuthToken();
+        // Find a user by their credentials and association with a specific superuser using Sequelize
+        const user = await Users.findByCredentials(req.body.email,req.body.password)
+
+        // If the user is not found, send an error response
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials or not associated with the specified superuser.' });
+        }
+
+        // TODO: Generate an authentication token for the user using a secure method
+        const token = await user.generateAuthToken(); // Assuming you have a method for token generation
 
         // Send a success response with the user and token
-        res.status(200).send({ user, token });
+        res.status(200).json({ user, token });
     } catch (e) {
-        res.status(400).send(e);
+        console.error(e);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
+
+////////////
+// router.post('/users/login', async (req, res) => {
+//     try {
+//         // Find a user by their credentials using Sequelize
+//         const user = await Users.findByCredentials(req.body.email, req.body.password);
+
+//         // Generate an authentication token for the user
+//         const token = await user.generateAuthToken();
+
+//         // Send a success response with the user and token
+//         res.status(200).send({ user, token });
+//     } catch (e) {
+//         res.status(400).send(e);
+//     }
+// });
 
 // Route to log out the current user
 router.post('/users/logout', auth, async (req, res) => {

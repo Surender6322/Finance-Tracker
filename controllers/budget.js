@@ -13,6 +13,7 @@ router.post('/budgets', auth, async (req, res) => {
         // Extract data from the request body
         const { amount, currency, month } = req.body;
         const userId = req.user.id;
+        // console.log(userId)
 
         // Check if a budget for the given month already exists
         const existedBudget = await Budgets.findOne({ where: { month } });

@@ -1,10 +1,12 @@
 // Import required modules for password hashing and JSON Web Tokens (JWT)
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
+const db = require('../config/db');
+
 
 // Define the Users model using Sequelize
 module.exports = (sequelize, DataTypes) => {
-    const Users = sequelize.define("users", {
+    const SuperUser = sequelize.define("superusers", {
         // Define the 'username' column with a STRING data type and constraints
         username: {
             type: DataTypes.STRING,
@@ -52,23 +54,18 @@ module.exports = (sequelize, DataTypes) => {
             set(value) {
                 this.setDataValue("tokens", JSON.stringify(value));
             },
-        },
-        bossId: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
+        }
     });
 
     // Before creating a user, trim whitespace from the username, hash the password, and initialize tokens array
-    Users.beforeCreate(async (user, options) => {
+    SuperUser.beforeCreate(async (user, options) => {
         user.username = user.username.trim();
         user.password = await bcrypt.hash(user.password.trim(), 8);
         user.tokens = JSON.stringify([]);
-        user.bossId = user.bossId;
     });
 
     // Before updating a user, trim whitespace from the username and re-hash the password if it changed
-    Users.beforeUpdate(async (user, options) => {
+    SuperUser.beforeUpdate(async (user, options) => {
         if (user.changed('username')) {
             user.username = user.username.trim();
         }
@@ -78,9 +75,9 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     // Instance method to generate an authentication token
-    Users.prototype.generateAuthToken = async function () {
+    SuperUser.prototype.generateAuthToken = async function () {
         const user = this;
-        const token = jwt.sign({ id: user.id.toString(),userType : 'user' }, 'secret_key');
+        const token = jwt.sign({ id: user.id.toString(), userType : 'superuser'}, 'secret_key');
 
         // Get the current tokens as an array
         let tokens = JSON.parse(user.tokens || "[]");
@@ -98,8 +95,11 @@ module.exports = (sequelize, DataTypes) => {
     };
 
     // Class method to find a user by their credentials (email and password)
-    Users.findByCredentials = async function (email, password) {
-        const user = await Users.findOne({ where: { email: email } });
+    SuperUser.findByCredentials = async function (email, password) {
+        
+        const user = await SuperUser.findOne({ where: { email: email } });
+
+
 
         if (!user) {
             throw new Error("Unable to login!!");
@@ -115,7 +115,7 @@ module.exports = (sequelize, DataTypes) => {
     };
 
     // Instance method to customize the JSON representation of a user (hide sensitive information)
-    Users.prototype.toJSON = function () {
+    SuperUser.prototype.toJSON = function () {
         const values = { ...this.get() };
         // Hide sensitive information
         delete values.password;
@@ -123,6 +123,16 @@ module.exports = (sequelize, DataTypes) => {
 
         return values;
     };
+
     // Return the Users model
-    return Users;
+    return SuperUser;
 };
+
+// // one to many between users and transactions
+// db.users.hasMany(db.transactions, {foreignKey: 'userId'})
+// db.transactions.belongsTo(db.users, {foreignKey: 'userId'})
+ 
+// // one to mant between users and budget
+// db.users.hasMany(db.budgets, {foreignKey: 'userId'})
+// db.budgets.belongsTo(db.users, {foreignKey: 'userId'})
+ 
