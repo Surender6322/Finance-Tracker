@@ -94,8 +94,7 @@ router.get('/superusers/allusers', auth,  async (req, res) => {
         where: { bossId: req.superuser.id },
         include: [{ model: Budgets, attributes: ['amount'], as: 'budgets', required: false },],
       });
- 
-      res.json({ users: userList });
+      res.json({ superuser:req.superuser,users: userList });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -104,8 +103,6 @@ router.get('/superusers/allusers', auth,  async (req, res) => {
 router.delete('/superusers', auth, async (req, res) => {
     try{
         const superuser = req.superuser
-        console.log("---------------------------------------")
-        console.log(superuser)
         await req.superuser.destroy()
         res.status(200).send({superuser})
     }catch(e){

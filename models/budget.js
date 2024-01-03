@@ -1,3 +1,5 @@
+const { INTEGER } = require("sequelize");
+
 // Define the Budgets model using Sequelize
 module.exports = (sequelize, DataTypes) => {
     const Budgets = sequelize.define("budgets", {
@@ -6,6 +8,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DECIMAL(15, 2), // Decimal with 15 digits, 2 decimal places
             allowNull: false, // Not allowed to be null
             defaultValue:0.00
+        },
+        thresholdAmount:{
+            type: DataTypes.DECIMAL(15, 2), // Decimal with 15 digits, 2 decimal places
+            defaultValue:0.00,
+            allowNull:true
         },
         // Define the 'month' column with a STRING data type and constraints
         month: {

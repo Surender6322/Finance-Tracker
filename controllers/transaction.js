@@ -1,25 +1,50 @@
 // Import the express module and create a router
 const express = require('express');
 const router = express.Router();
+const { Op } = require('sequelize')
 
 // Import the Sequelize models, authentication middleware, and currency codes
 const db = require('../config/db');
 const Transactions = db.transactions;
+const Budgets = db.budgets
 const auth = require('../middleware/auth');
 
 // Route to add a new transaction
 router.post('/transactions/add', auth, async (req, res) => {
     try {
+        userId = req.user.id
+
+        const currentDate = new Date();
+        // console.log(currentDate)
+        const monthy = currentDate.getMonth() + 1; // Months are 0-indexed in JavaScript
+        // console.log(currentMonth)
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = monthy < 10 ? '0' + monthy : monthy
+        const monthName = convertMonthNumberToName(currentMonth);
+
+        const limitExceeds = await Budgets.findOne({ userId, where: { month: monthName } });
+        // console.log(limitExceeds.thresholdAmount)
+        if (limitExceeds) {
+
+            const expenseResult = await Transactions.sum('amount', {
+                where: { userId, category: 'expense', date: { [Op.substring]: `${currentYear}-${currentMonth}` } },
+            });
+            // console.log(expenseResult);
+
+            if (limitExceeds.thresholdAmount <= expenseResult + req.body.amount) {
+                console.log("WARNING: Limit Exceeds")
+            }
+        }
+
         // Extract user ID from the authenticated request
-        const userId = req.user.id;
+        // const userId = req.user.id;
 
         // Get the current date
-        const date = new Date();
 
         // Extract transaction details from the request body
         const amount = req.body.amount;
         const category = req.body.category;
-        const currency = req.body.currency;  
+        const currency = req.body.currency;
 
         // Define valid currency codes
         const CurrencyCodes = ['USD', 'INR'];
@@ -36,7 +61,7 @@ router.post('/transactions/add', auth, async (req, res) => {
         }
 
         // Add transaction using Sequelize
-        const transaction = await Transactions.create({ amount, date, category, currency, userId });
+        const transaction = await Transactions.create({ amount, date: currentDate, category, currency, userId });
 
         res.status(201).json({ transaction });
     } catch (error) {
@@ -55,8 +80,8 @@ router.get('/transactions/list', auth, async (req, res) => {
         // Retrieve transactions using Sequelize
         const transactions = await Transactions.findAll({
             where: { userId },
-            offset: (page-1)*pageSize,
-            limit:pageSize
+            offset: (page - 1) * pageSize,
+            limit: pageSize
         });
 
         res.json({ transactions });
@@ -108,6 +133,20 @@ router.delete('/transactions/:id', auth, async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// Helper function to convert month number to name
+function convertMonthNumberToName(monthNumber) {
+    const months = [
+        'january', 'february', 'march', 'april',
+        'may', 'june', 'july', 'august',
+        'september', 'october', 'november', 'december'
+    ];
+
+    const monthIndex = monthNumber - 1;
+
+    // Return the corresponding month name
+    return months[monthIndex];
+}
 
 // Export the router for use in other parts of the application
 module.exports = router;
