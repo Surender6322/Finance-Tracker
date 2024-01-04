@@ -99,7 +99,7 @@ router.post('/users/logoutAll', auth, async (req, res) => {
     try {
         // Update the user's tokens array to an empty array
         const user = req.user;
-        const updatedTokens = [];
+        const updatedTokens = "[]"
         await Users.update({ tokens: updatedTokens }, { where: { id: user.id } });
 
         // Send a success response
